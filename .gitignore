@@ -1,0 +1,9 @@
+node_modules/
+dist/
+test-results/
+allure-results/
+allure-report/
+playwright-report/
+.env
+*.tsbuildinfo
+playwright/.cache/
