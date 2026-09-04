@@ -1,6 +1,6 @@
-# Playwright Automation Framework
+# Playwright Automation Framework (UI, API & Visual Testing)
 
-Generic and reusable UI test automation framework built with **Playwright** and **TypeScript**. Uses the **Page Object Model (POM)** pattern to keep tests clean, maintainable, and scalable.
+Generic and reusable test automation framework built with **Playwright**, **TypeScript**, and **API Request Context**. Uses the **Page Object Model (POM)** pattern to keep tests clean, maintainable, and scalable, alongside API data assertions and visual regression testing.
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ cp .env.example .env
 
 ## Project structure
 
-```
+```text
 ├── .github/workflows/playwright.yml   # CI/CD
 ├── src/
 │   ├── config/env.config.ts           # Environment variable loading
@@ -31,6 +31,8 @@ cp .env.example .env
 │   │   ├── base.page.ts               # Abstract base class (do not modify)
 │   │   └── example.page.ts            # Page Object template
 │   ├── tests/
+│   │   ├── api/                       # API Test Suites
+│   │   │   └── users-api.spec.ts      # API Integration & Validation Tests
 │   │   ├── example.spec.ts            # Functional test template
 │   │   └── visual/example-visual.spec.ts  # Visual test template
 │   ├── fixtures/custom.fixture.ts     # Fixtures with Page Objects
@@ -107,7 +109,7 @@ const fixtures = {
 };
 ```
 
-### 3. Write a test spec
+### 3. Write a UI test spec
 
 Create your spec in `src/tests/` using the fixtures:
 
@@ -141,7 +143,34 @@ test.describe('Login', () => {
 - One `test` = one atomic scenario. If you need to verify several things in the same flow, create multiple tests or use `test.step`.
 - Name files with the pattern `feature.spec.ts`.
 
-### 4. Add visual tests
+### 4. Write an API test spec
+
+Create API test suites directly in `src/tests/api/` using Playwright’s built-in `request` context:
+
+```ts
+import { test, expect } from '@playwright/test';
+
+test.describe('API Testing - Users Endpoint', () => {
+  const baseURL = '[https://reqres.in/api](https://reqres.in/api)';
+
+  test('GET /users - validate status code and data schema', async ({ request }) => {
+    const response = await request.get(`${baseURL}/users?page=2`);
+    expect(response.status()).toBe(200);
+    
+    const body = await response.json();
+    expect(Array.isArray(body.data)).toBeTruthy();
+    expect(body.data[0]).toHaveProperty('email');
+  });
+
+  test('POST /users - create new entry', async ({ request }) => {
+    const payload = { name: 'Pablo Lavayen', job: 'Senior Data & API QA Engineer' };
+    const response = await request.post(`${baseURL}/users`, { data: payload });
+    expect(response.status()).toBe(201);
+  });
+});
+```
+
+### 5. Add visual tests
 
 To compare screenshots and detect visual regressions:
 
@@ -158,7 +187,7 @@ test('login page should match design', async ({ page, loginPage }) => {
 - Subsequent runs compare against those screenshots.
 - Screenshots are saved alongside the tests and must be committed to the repo.
 
-### 5. Use the helpers and data-generator
+### 6. Use the helpers and data-generator
 
 ```ts
 import { generateRandomEmail, generateRandomString } from '../utils/helpers';
@@ -170,7 +199,7 @@ const form = generateFormData();              // { firstName, lastName, email, .
 const email = generateRandomEmail('myapp.com');
 ```
 
-### 6. Use reusable test data
+### 7. Use reusable test data
 
 Define static data in `src/data/test-data.ts` to avoid repeating them in specs:
 
